@@ -1,71 +1,78 @@
 package control;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
-
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
+import org.json.JSONObject;
+import model.Asiakas;
 import model.dao.Dao;
 
-/**
- * Servlet implementation class asiakkaat
- */
-@WebServlet("/asiakkaat")
-public class asiakkaat extends HttpServlet {
+
+@WebServlet("/asiakkaat/*")
+public class Autot extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
-    public asiakkaat() {
+   
+    public Asiakkaat() {
         super();
-        System.out.println("asiakkaat.asiakkaat()");
-        // TODO Auto-generated constructor stub
+        System.out.println("Asiakkaat.Asiakkaat()");
     }
-
-	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
-	 */
+	
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		System.out.println("asiakkaat.doPut()");
+		System.out.println("Asiakkaat.doGet()");
+		String pathInfo = request.getPathInfo();			
+		System.out.println("polku: "+pathInfo);	
+		String hakusana = pathInfo.replace("/", "");
 		Dao dao = new Dao();
-		ArrayList<Asiakas> asiakkaat = dao.listaaKaikki();
+		ArrayList<Asiakas> asiakkaat = dao.listaaKaikki(hakusana);
 		System.out.println(asiakkaat);
-		String strJSON = new JSONobject().put("asiakkaat", asiakkaat).toString();
+		String strJSON = new JSONObject().put("asiakkaat", asiakkaat).toString();	
 		response.setContentType("application/json");
 		PrintWriter out = response.getWriter();
 		out.println(strJSON);		
-		response.getWriter().append("Served at: ").append(request.getContextPath());
 	}
 
-	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
-	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		doGet(request, response);
-		System.out.println("asiakkaat.doPost()");
+		System.out.println("Asiakkaat.doPost()");
+		JSONObject jsonObj = new JsonStrToObj().convert(request);			
+		Asiakas asiakas = new Asiakkaat();
+		asiakas.setEtunimi(jsonObj.getString("etunimi"));
+		asiakas.setSukunimi(jsonObj.getString("sukunimi"));
+		asiakas.setAsiakasID(jsonObj.getString("asiakas_id"));
+		asiakas.setSposti(jsonObj.getString("sposti"));
+		asiakas.setPuhelin(jsonObj.getInt("puhelin"));
+		response.setContentType("application/json");
+		PrintWriter out = response.getWriter();
+		Dao dao = new Dao();			
+		if(dao.lisaaAsiakkaat(asiakas)){
+			out.println("{\"response\":1}");
+		}else{
+			out.println("{\"response\":0}");
+		}		
 	}
 
-	/**
-	 * @see HttpServlet#doPut(HttpServletRequest, HttpServletResponse)
-	 */
 	protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		System.out.println("asiakkaat.doPut()");
+		System.out.println("Asiakkaat.doPut()");		
 	}
-
-	/**
-	 * @see HttpServlet#doDelete(HttpServletRequest, HttpServletResponse)
-	 */
+	
 	protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		System.out.println("asiakkaat.doDelete()");
+		System.out.println("Asiakkaat.doDelete()");	
+		String pathInfo = request.getPathInfo();		
+		System.out.println("polku: "+pathInfo);
+		String poistettavaEtunimi = pathInfo.replace("/", "");		
+		response.setContentType("application/json");
+		PrintWriter out = response.getWriter();
+		Dao dao = new Dao();			
+		if(dao.poistaAsiakas(poistettavaEtunimi)){
+			out.println("{\"response\":1}");
+		}else{
+			out.println("{\"response\":0}");
+		}	
 	}
 
 }
