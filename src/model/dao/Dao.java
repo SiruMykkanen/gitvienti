@@ -76,4 +76,9 @@ public class Dao {
 			paluuArvo=false;
 		}				
 		return paluuArvo;
-}}
+}
+
+	public Asiakas etsiAsiakas(String etunimi) {
+		// TODO Auto-generated method stub
+		return null;
+	}}
