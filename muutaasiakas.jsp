@@ -42,83 +42,80 @@
 <span id="ilmo"></span>
 </body>
 <script>
-$(document).ready(function(){
-	$("#takaisin").click(function(){
-		document.location="listaaasiakkaat.jsp";
-	});
-	var rekno = requestURLParam("etunimi"); //Funktio löytyy scripts/main.js 	
-	$.ajax({url:"asiakkaat/haeyksi/"+etunimi, type:"GET", dataType:"json", success:function(result){	
-		$("#vanhaetunimi").val(result.etunimi);		
-		$("#etunimi").val(result.etunimi);	
-		$("#sukunimi").val(result.sukunimi);
-		$("#sposti").val(result.sposti);
-		$("#asiakas_id").val(result.asiakas_id);
-		$("#puhelin").val(result.puhelin);		
-    }});
-	
-	$("#tiedot").validate({						
-		rules: {
-			etunimi:  {
-				required: true,
-				minlength: 3				
-			},	
-			sukunimi:  {
-				required: true,
-				minlength: 3				
-			},
-			sposti:  {
-				required: true,
-				minlength: 5
-			},	
-			asiakas_id:  {
-				required: true,
-				minlength: 3,
-				maxlength: 10,
-			},
-			puhelin: {
-				required: true,
-				minlenght: 7,
-				number: true,
-			}
-		},
-		messages: {
-			etunimi: {     
-				required: "Puuttuu",
-				minlength: "Liian lyhyt"			
-			},
-			sukunimi: {
-				required: "Puuttuu",
-				minlength: "Liian lyhyt"
-			},
-			sposti: {
-				required: "Puuttuu",
-				minlength: "Liian lyhyt"
-			},
-			asiakas_id: {
-				required: "Puuttuu",
-				minlength: "Liian lyhyt",
-				maxlength: "Liian pitkä",
-			},
-			puhelin: {
-				required: "Puuttuu",
-				number: "Ei kelpaa",
-			}
-		},			
-		submitHandler: function(form) {	
-			paivitaTiedot();
-		}		
-	}); 	
-});
-function paivitaTiedot(){	
-	var formJsonStr = formDataJsonStr($("#tiedot").serializeArray());
-	$.ajax({url:"asiakkaat", data:formJsonStr, type:"PUT", dataType:"json", success:function(result) {       
-		if(result.response==0){
-      	$("#ilmo").html("Asiakkaan päivittäminen epäonnistui.");
-      }else if(result.response==1){			
-      	$("#ilmo").html("Asiakkaan päivittäminen onnistui.");
-      	$("#etunimi", "#sukunimi", "#sposti", "#asiakas_id", "puhelin").val("");
-	  }
-  }});	
+function tutkiKeyX(event){
+	if(event.keyCode==13){
+		vieTiedot();
+	}		
+}
+
+var tutkiKey = (event) => {
+	if(event.keyCode==13){
+		vieTiedot();
+	}	
+}
+
+document.getElementById("etunimi").focus();
+
+var etunimi = requestURLParam("etunimi"); 
+fetch("asiakkaat/haeyksi/" + etunimi,{
+      method: 'GET'	      
+    })
+.then( function (response) {
+	return response.json()
+})
+.then( function (responseJson) {	
+	console.log(responseJson);
+	document.getElementById("etunimi").value = responseJson.etunimi;		
+	document.getElementById("sukunimi").value = responseJson.sukunimi;	
+	document.getElementById("sposti").value = responseJson.sposti;	
+	document.getElementById("asiakas_id").value = responseJson.asiakas_id;	
+	document.getElementById("puhelin").value = responseJson.puhelin;
+	document.getElementById("vanhaetunimi").value = responseJson.vanhaetunimi;	
+});	
+
+function vieTiedot(){	
+	var ilmo="";
+	var d = new Date();
+	if(document.getElementById("etunimi").value.length<3){
+		ilmo="Etunimi ei kelpaa!";		
+	}else if(document.getElementById("sukunimi").value.length<3){
+		ilmo="Sukunimi ei kelpaa!";		
+	}else if(document.getElementById("sposti").value.length<6){
+		ilmo="Sähköposti ei kelpaa!";		
+	}else if(document.getElementById("asiakas_id").value.lenght<4){
+		ilmo="Asiakkaan ID ei kelpaa!";		
+	}else if(document.getElementById("puhelin").value.lenght<7{
+		ilmo="Puhelin ei kelpaa!";		
+	}
+	if(ilmo!=""){
+		document.getElementById("ilmo").innerHTML=ilmo;
+		setTimeout(function(){ document.getElementById("ilmo").innerHTML=""; }, 3000);
+		return;
+	}
+	document.getElementById("etunimi").value=siivoa(document.getElementById("etunimi").value);
+	document.getElementById("sukunimi").value=siivoa(document.getElementById("sukunimi").value);
+	document.getElementById("sposti").value=siivoa(document.getElementById("sposti").value);
+	document.getElementById("asiakas_id").value=siivoa(document.getElementById("asiakas_id").value);	
+	document.GetElementById("puhelin").value=siivoa(getElementById("puhelin").value);
+	var formJsonStr=formDataToJSON(document.getElementById("tiedot"));
+	console.log(formJsonStr);
+	fetch("asiakkaat",{
+	      method: 'PUT',
+	      body:formJsonStr
+	    })
+	.then( function (response) {
+		return response.json();
+	})
+	.then( function (responseJson) {	
+		var vastaus = responseJson.response;		
+		if(vastaus==0){
+			document.getElementById("ilmo").innerHTML= "Tietojen päivitys epäonnistui";
+        }else if(vastaus==1){	        	
+        	document.getElementById("ilmo").innerHTML= "Tietojen päivitys onnistui";			      	
+		}	
+		setTimeout(function(){ document.getElementById("ilmo").innerHTML=""; }, 5000);
+	});	
+	document.getElementById("tiedot").reset();
 }
 </script>
 </html>

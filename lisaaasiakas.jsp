@@ -41,73 +41,56 @@
 <span id="ilmo"></span>
 </body>
 <script>
-$(document).ready(function(){
-	$("#takaisin").click(function(){
-		document.location="listaaasiakkaat.jsp";
-	});
-	$("#tiedot").validate({						
-		rules: {
-			etunimi:  {
-				required: true,
-				minlength: 2				
-			},	
-			sukunimi:  {
-				required: true,
-				minlength: 2				
-			},
-			sposti:  {
-				required: true,
-				minlength: 5
-			},	
-			asiakas_id:  {
-				required: true,
-				minlength: 5
-			},
-			puhelin: {
-				required: true,
-				number: true,
-				minlenght: 7,
-			}
-			}	
-		},
-		messages: {
-			etunimi: {     
-				required: "Puuttuu",
-				minlength: "Liian lyhyt"			
-			},
-			sukunimi: {
-				required: "Puuttuu",
-				minlength: "Liian lyhyt"
-			},
-			sposti: {
-				required: "Puuttuu",
-				minlength: "Liian lyhyt"
-			},
-			asiakas_id: {
-				required: "Puuttuu",
-				minlength: "Liian lyhyt",
-			},
-			puhelin: {
-				required: "Puuttuu",
-				number: "Ei kelpaa",
-				minlength: "Liian lyhyt",
-			}
-		},			
-		submitHandler: function(form) {	
-			lisaaTiedot();
-		}		
-	}); 	
-});
+function tutkiKey(event){
+	if(event.keyCode==13){
+		lisaaTiedot();
+	}
+	
+}
+
+document.getElementById("etunimi").focus();
 function lisaaTiedot(){	
-	var formJsonStr = formDataJsonStr($("#tiedot").serializeArray()); 
-	$.ajax({url:"asiakkaat", data:formJsonStr, type:"POST", dataType:"json", success:function(result) {       
-		if(result.response==0){
-      	$("#ilmo").html("Asiakkaan lis‰‰minen ep‰onnistui.");
-      }else if(result.response==1){			
-      	$("#ilmo").html("Asiakkaan lis‰‰minen onnistui.");
-      	$("#etunimi", "#sukunimi", "#sposti", "#asiakas_id", "puhelin").val("");
+	var ilmo="";
+	var d = new Date();
+	if(document.getElementById("etunimi").value.length<3){
+		ilmo="Etunimi ei kelpaa!";		
+	}else if(document.getElementById("sukunimi").value.length<3){
+		ilmo="Sukunimi ei kelpaa";		
+	}else if(document.getElementById("sposti").value.length<6){
+		ilmo="S‰hkˆposti ei kelpaa!";		
+	}else if(document.getElementById("asiakas_id").value.length<4){
+		ilmo="Asiakkaan ID ei kelpaa!";		
+	}else if(document.getElementById("puhelin").value.length<8){
+		ilmo="Puhelinnumero ei kelpaa!";		
+	}
+	if(ilmo!=""){
+		document.getElementById("ilmo").innerHTML=ilmo;
+		setTimeout(function(){ document.getElementById("ilmo").innerHTML=""; }, 3000);
+		return;
+	}
+	document.getElementById("etunimi").value=siivoa(document.getElementById("etunimi").value);
+	document.getElementById("sukunimi").value=siivoa(document.getElementById("sukunimi").value);
+	document.getElementById("sposti").value=siivoa(document.getElementById("sposti").value);
+	document.getElementById("asiakas_id").value=siivoa(document.getElementById("asiakas_id").value);	
+	document.getElementById("puhelin").value=siivoa(document.getElementById("puhelin").value);	
+	var formJsonStr=formDataToJSON(document.getElementById("tiedot"));
+	fetch("asiakkaat",{
+	      method: 'POST',
+	      body:formJsonStr
+	    })
+	.then( function (response) {		
+		return response.json()
+	})
+	.then( function (responseJson) {	
+		var vastaus = responseJson.response;		
+		if(vastaus==0){
+			document.getElementById("ilmo").innerHTML= "Asiakkaan lis‰‰minen ep‰onnistui";
+      	}else if(vastaus==1){	        	
+      		document.getElementById("ilmo").innerHTML= "Asiakkaan lis‰‰minen onnistui";			      	
 		}
-  }});	
+		setTimeout(function(){ document.getElementById("ilmo").innerHTML=""; }, 5000);
+	});	
+	document.getElementById("tiedot").reset();
 }
 </script>
 </html>
